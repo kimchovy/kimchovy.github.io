@@ -44,9 +44,9 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-        ############될지 몰라서 일단 시도##############
-        name: npm build
-        run: npm install && npm run build
+        ############될지 몰라서 일단 시도(안돼서 일단 주석)##############
+        # name: npm build
+        # run: npm install && npm run build
 
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
