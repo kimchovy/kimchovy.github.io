@@ -5,7 +5,7 @@ description: >-
 date: 2025-03-27 07:20:00 +0900
 categories: [CS, Network]
 tags: [HTTP, Protocol, GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD, TRACE, CONNECT]
-pin: false
+pin: true
 ---
 
 ## 들어가기에 앞서 : HTTP 메서드(Methed)란?

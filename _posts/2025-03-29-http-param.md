@@ -52,24 +52,29 @@ pin: false
 
 - HTTP 요청 메시지는 크게 세 부분으로 구성됩니다.
 
-1. `start-line`
-2. `headers`
-3. `body`
+1. `시작 라인(start-line)`
+2. `헤더(headers)`
+3. `바디(body)`
 
-### 1. 시작 라인(Start Line)
+### 1. 요청 라인(Start Line)
+> HTTP 요청 메시지의 시작 라인은 `요청 라인(Request line)` 이라고 부른다.
 
-- 시작 라인 또한 세 부분으로 구성되어 있다.
-    - `HTTP method / Request target / HTTP version`
-    > 한글로 풀어서 설명하자면 대략, `어떤 행동을 할 것인지` / `어떤 리소스를 요청하는지` / `어떤 버전의 HTTP로 응답받을 것인지` 정도가 됩니다.
+- 요청 라인 또한 세 부분으로 구성되어 있습니다.
+- `HTTP 메서드 / 요청 대상 / HTTP 버전`
+    > HTTP 메서드(HTTP method): 서버가 수행해야 할 동작을 의미하며 GET, POST, PUT, DELETE등이 있다.
 
-- 예시: 
-    - GET /index.html HTTP/1.1
-        > GET : 요청 메서드(`POST`, `PUT`, `DELETE` 등)
+    > 요청 대상(Request target): 주로 `URL`이 들어가며, GET, POST 등의 메서드는 절대경로 뒤에 '?'로 시작하는 `쿼리 스트링`도 들어갈 수 있습니다.
 
-        > /index.html : 요청 대상(`URI` path와 GET 메서드의 경우 절대경로 뒤에 '?'로 시작하는 `쿼리 스트링`도 들어갈 수 있습니다)
+    > HTTP 버전(HTTP version): 응답 메시지에서 써야 할 HTTP 버전을 명시합니다.(`1.0`, `1.1`, `2`, `3`)
+    >> `0.9버전`으로 불리는 one-line protocol인 HTTP 초기 버전도 있긴 있다.
 
-        >HTTP/1.1 : HTTP 버전(`1.0`, `1.1`, `2`, `3`)
-        >> `0.9버전`으로 불리는 one-line protocol인 HTTP 초기 버전도 있긴 있다.~~(현재 쓰이는 곳 아시는분은 제보 바랍니다)~~
+- 예시:
+```
+    GET /index.html?icecream=babamba HTTP/1.1
+```
+```
+    POST /test.html HTTP/1.0
+```
 
 
 ### 2. 요청 헤더(Request Headers)
@@ -78,11 +83,15 @@ pin: false
 > 메시지 크기, 압축 여부, 인증(Authentication), 브라우저 정보, 서버 정보, 캐시 등
     - key:value 형식을 따릅니다.
 - 예시:
-    - Host: www.example.com
+```
+    Host: www.example.com
+    User-Agent: Mozilla/5.0
+    Content-Type: application/json
+```
     > Host : 요청을 보낼 서버의 주소
-    - User-Agent: Mozilla/5.0
+
     > User-Agent : 요청을 보낸 브라우저 또는 프로그램 정보
-    - Content-Type: application/json
+
     > Content-Type : 보내는 데이터의 타입 (JSON, HTML 등)
     >> GET 메서드는 무조건 URL 끝에 value=text 형식의 쿼리가 붙어서 보내지기에 Content-type을 따로 지정해줄 필요가 없다고 한다.
     >>> 즉, POST나 PUT처럼 body에 데이터를 보낼때 필요로 한다.
@@ -93,6 +102,7 @@ pin: false
 - POST 요청처럼 데이터를 함께 보낼 때 요청 바디[^body]를 사용합니다.
 > 요청, 응답 구분없이 바디 부분에는 byte로 표현 가능한 모든 데이터가 들어갈 수 있습니다.
 >> 데이터 예시: html 문서, 이미지, 영상, JSON 등
+- 예시:
 
 ```json
 {
@@ -102,17 +112,11 @@ pin: false
   "stay_up_all_night": true
 }
 ```
+
 ```html
 <html>
     <body>
         <h1>This is my awesome blog!</h1>
-    </body>
-</html>
-```
-```image
-<html>
-    <body>
-        <span>...</span>
     </body>
 </html>
 ```
@@ -121,69 +125,112 @@ pin: false
 ## HTTP 응답 메시지 구조
 
 - 서버가 요청을 처리한 후 응답을 보낼 때도 요청과 비슷한 구조를 가집니다.
+> 시작라인, 헤더, 바디의 순서는 같지만 시작라인에 담기는 요소가 다릅니다.
 
 ### 1. 상태 라인(Status Line)
-HTTP/1.1 200 OK
-HTTP/1.1 : HTTP 버전
+> HTTP 응답 메시지의 시작 라인은 `상태 라인(Request line)` 이라고 부른다.
 
-200 : 상태 코드 (요청이 성공했음을 의미)
+- 응답 라인도 요청 라인과 동일하게 세 부분으로 구분되어 있다.
+- `HTTP 버전 / 상태 코드 / 상태 메시지`
+    > HTTP 버전(HTTP version): 사용된 HTTP 버전으로, 보통 `HTTP/1.1`이 들어간다.
 
-OK : 상태 메시지
+    > 상태 코드(Status code): 클라이언트가 보낸 요청에 대한 결과를 숫자로 표현한 부분으로, 일반적으로 `200`, `404`등이 있다.
+
+    > 상태 메시지(Status message): 사람이 이해할 때 도움이 되는 상태 코드에 대한 짧고, 순전히 정보 제공 목적의 텍스트. 
+
+- 예시:
+```
+    HTTP/1.1 200 OK
+```
+```
+    HTTP/1.1 404 Not Found
+```
 
 ### 2. 응답 헤더(Response Headers)
-응답 헤더도 요청 헤더처럼 추가 정보를 담고 있어요.
 
-Content-Type: text/html
-Set-Cookie: session_id=abcd1234; Path=/; HttpOnly
-Content-Type : 응답 데이터의 타입 (HTML, JSON 등)
+- 응답 헤더도 요청 헤더처럼 추가 정보를 담고 있습니다.
 
-Set-Cookie : 클라이언트에 저장할 쿠키 정보
+- 예시:
+```
+    Content-Type: text/html
+    Set-Cookie: session_id=abcd1234; Path=/; HttpOnly
+    Content-Type : 응답 데이터의 타입 (HTML, JSON 등)
+```
+> `Set-Cookie` : 클라이언트에 저장할 쿠키 정보
+
 
 ### 3. 응답 바디(Response Body)
-응답 바디에는 실제 응답 데이터가 포함됩니다.
 
-<html>
-  <body>
-    <h1>Welcome to my website!</h1>
-  </body>
-</html>
+- 응답 바디에는 실제 응답 데이터가 포함됩니다.
+
+- 요청 바디처럼 다양한 데이터가 포함됩니다.
+
+- 예시:
+```html
+    <h1>this is an example</h1>
+```
 
 ------
 ## 요청과 응답에서 자주 쓰이는 파라미터들
 
 ### 쿼리 스트링(Query String)
-URL 뒤에 ?를 붙여 키-값 쌍으로 데이터를 전달
 
-예: https://example.com/search?query=jekyll&sort=recent
+- `URL` 뒤에 `?`를 붙여 키=값 쌍으로 데이터를 전달
+> '&' 기호로 구분
 
-사용 예: 검색어 입력, 필터 옵션 전달
+- 예시:
+```
+    https://example.com/search?query=깃허브&sort=recent
+```
+    
+> 사용 예: 검색어 입력, 필터 옵션 전달
+>> example.com에서 검색(search)을 하는데, 검색어(query)는 깃허브이고(&), 정렬기준(sort)은 최신순(recent)으로
 
 ### 패스 파라미터(Path Parameter)
-URL 경로 일부로 데이터를 전달
 
-예: https://example.com/users/123
+- `URL` 경로의 일부로 데이터를 전달
 
-사용 예: 특정 사용자 정보 요청
+- 예시:
+```
+    https://example.com/users/123
+```
+
+> 사용 예: 특정 사용자 정보 요청
+>> example.com 사이트에 있는 123이라는 유저의 정보를 보여주세요~
 
 ### 쿠키(Cookie)
-서버가 클라이언트에 저장하도록 하는 작은 데이터
 
-예: 로그인 유지, 장바구니 정보 저장
+- `서버가 클라이언트에 저장`하도록 하는 작은 데이터이다.
+> HTTP 요청을 보내는 클라이언트를 `서버측에서 식별`하기 위해 사용한다.
+- 쿠키는 주로 세 가지 목적을 위해 사용한다.
+1. `세션 관리(Session management)`
+> `로그인` 유지, `장바구니` 정보 저장, `게임 스코어`등의 정보 저장 및 관리
+2. `개인화(Personalization)`
+> 개인별 맞춤 설정
+3. `트래킹(Tracking)`
+> 해당 `사용자의 행동을 기록, 분석`하기 위한 용도
 
-Set-Cookie: user_id=chejjeok; Path=/; HttpOnly
+- 예시:
+> 서버로부터 클라이언트에게 전송되는 `쿠키 헤더` 
+
+```
+HTTP/1.1 200 OK
+Content-type: text/html
+Set-Cookie: 내가만든쿠키=나를위해
+Set-Cookie: 상한쿠키=너를위해
+
+[page content]
+```
 
 ### 헤더(Header) 기반 토큰
-API 요청 시 인증 정보 전달
 
+- 헤더 기반 토큰은 토큰 유형과 관련된 서명 알고리즘을 정의하는 토큰의 요소입니다. 
+- 토큰은 서버에서 클라이언트로 보내는 메시지로, 클라이언트가 임시로 저장합니다. 
+
+- API 요청 시 인증 정보를 서버로 전달합니다.
+
+- 토큰 기반 인증의 한 종류인 `JSON 웹 토큰`(줄여서 통칭 `JWT`)
 예: Authorization: Bearer abcd1234
-
-------
-## 정리
-HTTP 요청은 요청 라인, 요청 헤더, 요청 바디로 구성됨
-
-HTTP 응답은 상태 라인, 응답 헤더, 응답 바디로 구성됨
-
-쿼리 스트링, 패스 파라미터, 쿠키, 헤더를 통해 데이터를 주고받음
 
 ------
 ## Reference
