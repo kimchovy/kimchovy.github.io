@@ -1,11 +1,11 @@
 ---
-title: 작성중 / 서버와 클라이언트의 요청과 응답 구조(HTTP)
+title: 토큰과 세션
 description: >-
-  HTTP 요청과 응답 메시지의 헤더와 바디 구조, 쿠키, 쿼리 스트링, 패스 파라미터 등을 이해해보자.
+  이해해보자.
 date: 2025-03-29 02:46:00 +0900
-categories: [CS, Network]
-tags: [HTTP, Web, Network, Header, Body, Cookie, Parameter]
-pin: false
+categories: [CS, Network, HTTP]
+tags: [HTTP, Web, Network, Header, Body]
+pin: true
 ---
 
 ## 들어가기에 앞서 1: HTTP 요청, 응답의 기본 개념
@@ -69,11 +69,11 @@ pin: false
     >> `0.9버전`으로 불리는 one-line protocol인 HTTP 초기 버전도 있긴 있다.
 
 - 예시:
+```http
+GET /index.html?icecream=babamba HTTP/1.1
 ```
-    GET /index.html?icecream=babamba HTTP/1.1
-```
-```
-    POST /test.html HTTP/1.0
+```http
+POST /test.html HTTP/1.0
 ```
 
 
@@ -84,9 +84,9 @@ pin: false
     - key:value 형식을 따릅니다.
 - 예시:
 ```
-    Host: www.example.com
-    User-Agent: Mozilla/5.0
-    Content-Type: application/json
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Content-Type: application/json
 ```
     > Host : 요청을 보낼 서버의 주소
 
@@ -139,11 +139,11 @@ pin: false
     > 상태 메시지(Status message): 사람이 이해할 때 도움이 되는 상태 코드에 대한 짧고, 순전히 정보 제공 목적의 텍스트. 
 
 - 예시:
+```http
+HTTP/1.1 200 OK
 ```
-    HTTP/1.1 200 OK
-```
-```
-    HTTP/1.1 404 Not Found
+```http
+HTTP/1.1 404 Not Found
 ```
 
 ### 2. 응답 헤더(Response Headers)
@@ -152,9 +152,9 @@ pin: false
 
 - 예시:
 ```
-    Content-Type: text/html
-    Set-Cookie: session_id=abcd1234; Path=/; HttpOnly
-    Content-Type : 응답 데이터의 타입 (HTML, JSON 등)
+Content-Type: text/html
+Set-Cookie: session_id=abcd1234; Path=/; HttpOnly
+Content-Type : 응답 데이터의 타입 (HTML, JSON 등)
 ```
 > `Set-Cookie` : 클라이언트에 저장할 쿠키 정보
 
@@ -166,42 +166,49 @@ pin: false
 - 요청 바디처럼 다양한 데이터가 포함됩니다.
 
 - 예시:
+
 ```html
-    <h1>this is an example</h1>
+<h1>this is an example</h1>
 ```
 
 ------
 ## 요청과 응답에서 자주 쓰이는 파라미터들
 
+------
 ### 쿼리 스트링(Query String)
 
 - `URL` 뒤에 `?`를 붙여 키=값 쌍으로 데이터를 전달
 > '&' 기호로 구분
 
 - 예시:
+
 ```
-    https://example.com/search?query=깃허브&sort=recent
+https://example.com/search?query=깃허브&sort=recent
 ```
     
 > 사용 예: 검색어 입력, 필터 옵션 전달
 >> example.com에서 검색(search)을 하는데, 검색어(query)는 깃허브이고(&), 정렬기준(sort)은 최신순(recent)으로
 
+------
 ### 패스 파라미터(Path Parameter)
 
 - `URL` 경로의 일부로 데이터를 전달
 
 - 예시:
+
 ```
-    https://example.com/users/123
+https://example.com/users/123
 ```
 
 > 사용 예: 특정 사용자 정보 요청
 >> example.com 사이트에 있는 123이라는 유저의 정보를 보여주세요~
 
+------
 ### 쿠키(Cookie)
 
 - `서버가 클라이언트에 저장`하도록 하는 작은 데이터이다.
 > HTTP 요청을 보내는 클라이언트를 `서버측에서 식별`하기 위해 사용한다.
+
 - 쿠키는 주로 세 가지 목적을 위해 사용한다.
 1. `세션 관리(Session management)`
 > `로그인` 유지, `장바구니` 정보 저장, `게임 스코어`등의 정보 저장 및 관리
@@ -210,42 +217,86 @@ pin: false
 3. `트래킹(Tracking)`
 > 해당 `사용자의 행동을 기록, 분석`하기 위한 용도
 
-- 예시:
-> 서버로부터 클라이언트에게 전송되는 `쿠키 헤더` 
+- 이 중에서 `로그인`을 예시로 쿠키가 요청/응답으로 오가는 과정을 설명하겠다.
 
+#### 쿠키의 동작원리
+------
+##### 1. 클라이언트의 요청
+
+- 우선, 클라이언트의 요청이 서버로 전달된다.
+
+```http
+POST /login HTTP/1.1
+user=kimchovy&password=12345678
 ```
+> 클라이언트의 요청: "서버야 나 kimchovy라는 이름의 유저고 비밀번호도 적어서 보낼테니까 로그인 시켜줘~"
+>> 이해를 돕기 위한 예시라서 위와 같이 적었지만, 실제로는 저렇게 보안이 허술한 `요청/응답`은 오가지는 않는다.
+
+##### 2. 서버의 응답(쿠키 포함)
+
+- 서버는 클라이언트의 `요청에 따라` 메시지에 포함된 데이터를 바탕으로 쿠키를 만들고, 이 쿠키를 `응답 헤더에 포함`해서 보낸다.
+> 모든 요청마다 쿠키가 자동으로 생성되는 것이 아님.
+
+```http
 HTTP/1.1 200 OK
-Content-type: text/html
-Set-Cookie: 내가만든쿠키=나를위해
-Set-Cookie: 상한쿠키=너를위해
-
-[page content]
+Set-Cookie: user=kimchovy
 ```
+> 서버의 응답: "OK 네 요청 확인했고, 여기 너를 위해 구운 쿠키 줄테니까 브라우저에 잘 저장해놔~"
 
-### 헤더(Header) 기반 토큰
+##### 3. 클라이언트의 요청(쿠키 포함)
 
-- 헤더 기반 토큰은 토큰 유형과 관련된 서명 알고리즘을 정의하는 토큰의 요소입니다. 
-- 토큰은 서버에서 클라이언트로 보내는 메시지로, 클라이언트가 임시로 저장합니다. 
+- 이제 클라이언트의 브라우저에 있는 `쿠키 저장소`에 쿠키가 저장되었으며, 앞으로 해당 서버에 대한 모든 요청에 쿠키를 포함시키게 된다.
+> 같은 서버에 다시 요청을 할때, `쿠키 저장소`에서 해당 서버가 만들어준 쿠키의 유무를 확인한 뒤에 만약 있다면, 해당 쿠키를 요청 헤더에 포함시켜서 함께 보낸다.
+>> 일반적으로 쿠키들에는 지속시간 또는 만료일이 부여되는데, 이에 따라서 이전에 방문했던 사이트(혹은 페이지)일지라도 기존의 쿠키가 만료되었을 경우, 새로운 쿠키를 서버로부터 받지 않는 이상 클라이언트는 서버에게 요청시 전달할 쿠키가 없게 된다.
 
-- API 요청 시 인증 정보를 서버로 전달합니다.
+```http
+GET /home.html HTTP/1.1
+Host: www.test.com
+Cookie: user=kimchovy
+```
+> 클라이언트의 요청: "나 좀아까 로그인했던 kimchovy라고 하는데, 자세한건 여기 쿠키 보면 알거야~"
+>> 다시 로그인 요청을 할 필요 없이, 로그인이 이미 된 상태라는 것을 쿠키를 통해 서버에게 알려줌.
 
-- 토큰 기반 인증의 한 종류인 `JSON 웹 토큰`(줄여서 통칭 `JWT`)
-예: Authorization: Bearer abcd1234
+#### 쿠키가 여러개라면?
+
+- 쿠키는 필요에따라 한개 이상의 쿠키가 요청/응답 과정에서 헤더에 담겨 전달될 수 있다.
+> 물론, 요청 헤더에 쿠키를 담기 위해서는 해당 서버로부터 받아 `브라우저`상의 `쿠키 저장소`에 존재하는 `만료되지 않은` 쿠키가 존재해야한다.
+
+- 서버의 응답 메시지에 포함된 여러개의 쿠키 예시:
+
+```http
+HTTP/1.1 200 OK
+Set-Cookie: 중복되지않는이름=yes
+Set-Cookie: 내가만든쿠키=forme
+Set-Cookie: 상한쿠키=foryou
+Set-Cookie: cookie=chocochip
+Set-Cookie: mintCookie=no
+```
+> 요청도 위와 마찬가지다.
+
+------
+### 토큰(Token)
+
+- `토큰` 또한 `쿠키`와 마찬가지로 서버가 클라이언트에게 발급해주는 `신분증` 같은 것이며, 서버에게 요청을 할 때마다 함께 보내줘야 합니다.
+- 비유하자면, 놀이공원에서 입장권을 발급받는것과 비슷합니다.
+    - 이 놀이공원은 `시간제 자유이용권`만을 판매하며, 해당 이용권의 시간을 모두 소진시에는 `새 티켓을 발급`받지 않는 한 놀이기구를 탈 수 없습니다.
+    1. 놀이기구를 타기 위해 놀이공원 입구에서 `시간제` 자유이용권을 구매한 후 입장하고
+    > 클라이언트의 로그인 요청에 대한 서버로부터의 토큰을 포함한 응답
+    2. 놀이기구를 탈 때마다 이용권의 잔여시간과 그 외의 이용권에 대한 부가정보를 놀이공원에게 확인받고 탑승하며
+    > 클라이언트가 서버에 HTTP 요청시 토큰을 함께 제시, 서버측에서는 해당 토큰의 유효성을 확인(이전에 제공했던 토큰이 맞는지)
+    3. 자유이용권의 잔여시간을 모두 소진했을 경우, 티켓을 추가로 발급받지 않는 한, 놀이기구는 더이상 탈 수 없습니다.
+    > 토큰의 만료시, 새 토큰을 발급받기 전까지 어떠한 `권한`이 필요한 행동을 할 수 없게된다.
+    4. 하지만 운이 좋게도 누군가 버린 시간이 남아있는 티켓을 주웠고, 이 티켓의 남은 시간동안 자유롭게 놀이기구를 탈 수 있습니다.
+    > 토큰의 단점 중 하나로, 만일 어떠한 토큰이 탈취당하더라도 해당 토큰의 유효시간이 남아있다면, 그 누구라도 해당 토큰을 이용해서 서버에 `특정 권한`을 가진 `요청`을 할 수 있습니다.
+- 서버로부터 토큰을 전달받은 클라이언트는 `로컬 스토리지(Local storage)` 또는 `쿠키` 등에 저장합니다.
+    - 이후 해당 토큰을 이용하여 클라이언트는 서버와의 연결을 인증하고, `인가(Authorization)`된 자원에 접근할 수 있습니다.
+    > 들어봤을법한 `JSON 웹 토큰`(통칭 `JWT`) 또한 이름에서부터 알 수 있듯이 `토큰 기반 인증`의 한 종류입니다.
+- 토큰에도 여러 종류와 형태가 있기에 이에 대해서는 추후 다른 게시글에서 다루도록 하겠습니다.
 
 ------
 ## Reference
 
-<https://sehun5515.tistory.com/92>
-
-<https://developing-move.tistory.com/293>
-
-<https://junuuu.tistory.com/m/36?category=974977>
-
-<https://blog.naver.com/ghdalswl77/222517833354>
-
-<https://velog.io/@mokyoungg/HTTP-HTTP-%EA%B5%AC%EC%A1%B0-%EB%B0%8F-%ED%95%B5%EC%8B%AC-%EC%9A%94%E3%85%85>
-
-<https://blueyikim.tistory.com/1999>
+<https://engineerinsight.tistory.com/84>
 
 ------
 [^overhead]: 오버헤드(overhead)는 어떤 처리를 하기 위해 들어가는 간접적인 처리 시간이나 메모리 등을 말합니다.

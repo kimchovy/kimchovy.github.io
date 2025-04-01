@@ -3,7 +3,7 @@ title: HTTP 메서드 종류와 특징
 description: >-
   클라이언트와 서버간의 HTTP 프로토콜 통신에서 GET, POST, PUT, DELETE 등의 메서드들이 맡는 역할과 그 특징을 이해해보자.
 date: 2025-03-27 07:20:00 +0900
-categories: [CS, Network]
+categories: [CS, Network, HTTP]
 tags: [HTTP, Protocol, GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD, TRACE, CONNECT]
 pin: true
 ---
